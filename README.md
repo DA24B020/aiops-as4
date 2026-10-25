@@ -1,5 +1,7 @@
 # DA3408 Assignment 4: Observability for a CPU Image-Captioning App
 
+Video Link:- https://drive.google.com/drive/folders/1xG34JySMbmY-ZX08DMcJCcz_XmXFo1M0
+
 A Streamlit app that captions images on CPU with `Salesforce/blip-image-captioning-base`, instrumented with `prometheus_client`. Prometheus scrapes the app and `node_exporter`, evaluates recording and alert rules, and sends alerts to Alertmanager. Grafana visualises application and system metrics side by side.
 
 ```
