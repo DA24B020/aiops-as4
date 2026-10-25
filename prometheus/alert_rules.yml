@@ -1,0 +1,50 @@
+groups:
+  - name: caption_alerts
+    rules:
+      - alert: CaptionAppDown
+        expr: up{job="caption_app"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: Captioning app metrics endpoint is down
+
+      - alert: NodeExporterDown
+        expr: up{job="node"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: node_exporter is down
+
+      - alert: HighInferenceLatency
+        expr: caption:inference_seconds:p95_1m > 5
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: p95 inference latency above 5 s for {{ $labels.mode }}
+
+      - alert: HighErrorRate
+        expr: caption:error_ratio:rate1m > 0.1
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: More than 10 % of images failing
+
+      - alert: HighCPU
+        expr: node:cpu_utilisation:percent > 90
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: Host CPU above 90 %
+
+      - alert: LowMemory
+        expr: node:memory_used:percent > 90
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: Host memory above 90 %

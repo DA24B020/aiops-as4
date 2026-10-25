@@ -1,0 +1,51 @@
+groups:
+  - name: caption_app
+    interval: 5s
+    rules:
+      - record: caption:images_per_second:rate1m
+        expr: sum by (mode) (rate(caption_images_processed_total{status="success"}[1m]))
+
+      - record: caption:requests_per_second:rate1m
+        expr: sum by (mode, status) (rate(caption_requests_total[1m]))
+
+      # AI-generated. Prompt: "PromQL for p50 inference latency per mode over 1m from a Prometheus histogram named caption_inference_seconds"
+      - record: caption:inference_seconds:p50_1m
+        expr: histogram_quantile(0.50, sum by (le, mode) (rate(caption_inference_seconds_bucket[1m])))
+
+      # AI-generated. Prompt: "Same as above but p95"
+      - record: caption:inference_seconds:p95_1m
+        expr: histogram_quantile(0.95, sum by (le, mode) (rate(caption_inference_seconds_bucket[1m])))
+
+      # AI-generated. Prompt: "Same as above but p99"
+      - record: caption:inference_seconds:p99_1m
+        expr: histogram_quantile(0.99, sum by (le, mode) (rate(caption_inference_seconds_bucket[1m])))
+
+      # AI-generated. Prompt: "Average latency per mode from histogram _sum and _count over 1m"
+      - record: caption:inference_seconds:avg_1m
+        expr: sum by (mode) (rate(caption_inference_seconds_sum[1m])) / sum by (mode) (rate(caption_inference_seconds_count[1m]))
+
+      # AI-generated. Prompt: "Average from a Summary's _sum and _count over 1m"
+      - record: caption:decode_seconds:avg_1m
+        expr: sum by (mode) (rate(caption_image_decode_seconds_sum[1m])) / sum by (mode) (rate(caption_image_decode_seconds_count[1m]))
+
+      # AI-generated. Prompt: "Error ratio of images processed, errors over all, 1m window, 0 when idle"
+      - record: caption:error_ratio:rate1m
+        expr: |
+          sum(rate(caption_images_processed_total{status="error"}[1m]))
+          /
+          clamp_min(sum(rate(caption_images_processed_total[1m])), 1e-9)
+
+  - name: node
+    interval: 5s
+    rules:
+      # AI-generated. Prompt: "PromQL for overall CPU utilisation percent from node_exporter over 1m"
+      - record: node:cpu_utilisation:percent
+        expr: 100 * (1 - avg(rate(node_cpu_seconds_total{mode="idle"}[1m])))
+
+      # AI-generated. Prompt: "PromQL for memory used percent from node_exporter MemAvailable and MemTotal"
+      - record: node:memory_used:percent
+        expr: 100 * (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)
+
+      # AI-generated. Prompt: "PromQL for root filesystem used percent, excluding tmpfs and overlay"
+      - record: node:disk_used:percent
+        expr: 100 * (1 - node_filesystem_avail_bytes{mountpoint="/", fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{mountpoint="/", fstype!~"tmpfs|overlay"})
